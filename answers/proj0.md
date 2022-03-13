@@ -6,7 +6,7 @@ View the file proj-intro/src/userprog/build/tests/userprog/do-nothing.result. Th
 然而i386的寻址更复杂。有32位地址线和多种寻址模式。CS:EIP寄存器组中，CS为选择符，实际上是一个索引，用于在GDT中寻找基址，将基址与32位偏移地址相加得到物理地址。这是一种保护操作系统的方法。
 （Reference：Windows usually sets up the selectors so that they map 1:1 directly to virtual addresses, that's why they all have base of 0. fs is the exception because it's used for quick addressing of the Thread Information Block (TIB) which is separate for each thread of each process. https://reverseengineering.stackexchange.com/questions/14397/how-are-addresses-calculated-from-the-values-in-x86-segment-registers）
 所以在本题中，我倾向于认为cs=001b得到的基址应该也为0，所以第二题中造成程序崩溃的指令地址在0x080488f5
-￼
+![](resources/ADDRESS.gif)
  1. What virtual address did the program try to access from userspace that caused it to crash? 
 CR2是页故障线性地址寄存器，保存最后一次出现页故障的全32位线性地址;
 cr2= 0xc0000008
@@ -18,7 +18,7 @@ eip = 0x080488f5
 (Use i386-elf-objdump instead of objdump)
 
 There’s the asm generate by “i386-elf-objdump -d do-nothing”
-￼
+<resources/do-nothing.txt>￼
 Find the instruction at 0x080488f5 :
 80488f5:	8b 45 0c             	mov    0xc(%ebp),%eax
 In function _start:
@@ -34,7 +34,6 @@ In function _start:
  8048907:	89 04 24             	mov    %eax,(%esp)
  804890a:	e8 d4 22 00 00       	call   804abe3 <exit>
 
-
 4. Find the C code for the function you identied above (hint: it was executed in userspace, so it's either in do-nothing.c or one of the files in proj-intro/src/lib or proj-intro/src/lib/user), and copy it onto Gradescope. For each instruction in the disassembled function in #3, explain in a few words why it's necessary and/or what it's trying to do. Hint: see 80x86 Calling Convention.
 
 function in src/lib/user/entry.c
@@ -44,7 +43,7 @@ int main(int, char* []);
 void _start(int argc, char* argv[]);
 
 void _start(int argc, char* argv[]) { exit(main(argc, argv)); }
-￼
+￼<resources/entry.c>￼
  5. Why did the instruction you identied in #3 try to access memory at the virtual address you identied in #1? Don't explain this in terms of the values of registers; we're looking for a higherlevel explanation.
 _start 的调用者时内核程序intr_exit,而如果_start被用户程序调用不会出现问题；但_start在读取参数时试图从内核栈上读取参数，程序由于protection violation而结束
 
@@ -102,8 +101,7 @@ C:tid = thread_create(file_name, PRI_DEFAULT, start_process, fn_copy);
 $2 = {edi = 0, esi = 0, ebp = 0, esp_dummy = 0, ebx = 0, edx = 0, ecx = 0, eax = 0, gs = 35, fs = 35,
   es = 35, ds = 35, vec_no = 0, error_code = 0, frame_pointer = 0x0, eip = 0x80488ef, cs = 27,
   eflags = 514, esp = 0xc0000000, ss = 35}
-￼
-
+![](resources/xe,ess or0, obpl 0x0. sspdioey ox0, obx  Ox0, edx  Ox0, Cx  040, Oax  Ox0.png)
 /*A bug only happened once, ignore it 
 in load(){}
 if (file_read(file, &ehdr, sizeof ehdr) != sizeof ehdr ||
@@ -112,8 +110,8 @@ if (file_read(file, &ehdr, sizeof ehdr) != sizeof ehdr ||
     printf("load: %s: error loading executable\n", file_name);
     goto done;
   }
-￼
-￼
+￼![](resources/(adb) ps ehdr.e phentsize sizeof(struct Elf32 Phar..png)
+￼![](resources/(gdb) ps ehdr.e_phentsize.png)
 */
 
 11. The first instruction in the asm volatile statement sets the stack pointer to the bottom of the if_ structure. The second one jumps to intr_exit. The comments in the code explain what's happening here. Step into the asm volatile statement, and then step through the instructions. As you step through the iret instruction, observe that the function returns into userspace. Why does the processor switch modes when executing this function? Feel free to explain this in terms of the values in memory and/or registers at the time iret is executed, and the functionality of the iret instruction. 
