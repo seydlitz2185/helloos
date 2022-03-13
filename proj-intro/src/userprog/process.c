@@ -98,6 +98,13 @@ static void start_process(void* file_name_) {
     if_.cs = SEL_UCSEG;
     if_.eflags = FLAG_IF | FLAG_MBS;
     success = load(file_name, &if_.eip, &if_.esp);
+    /*if_.esp is 0xc0000000now*/
+    /*we need if_.esp sub an offset to avoid protection violation. 
+    The offset should equal or greater than 12,
+    so that 0xc(%ebp) won't touch kernel stack. 
+    Don't forget stack align, (offset+28)%16 should equal 12,
+    so the smallest offset is 20 */
+    if_.esp = if_.esp-20;
   }
 
   /* Handle failure with succesful PCB malloc. Must free the PCB */
@@ -123,6 +130,8 @@ static void start_process(void* file_name_) {
      arguments on the stack in the form of a `struct intr_frame',
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
+  /*确定栈上值0xc(%esp)有误*/
+  /*进程切换（内核——>用户）*/
   asm volatile("movl %0, %%esp; jmp intr_exit" : : "g"(&if_) : "memory");
   NOT_REACHED();
 }
@@ -286,7 +295,7 @@ bool load(const char* file_name, void (**eip)(void), void** esp) {
     printf("load: %s: open failed\n", file_name);
     goto done;
   }
-
+  
   /* Read and verify executable header. */
   if (file_read(file, &ehdr, sizeof ehdr) != sizeof ehdr ||
       memcmp(ehdr.e_ident, "\177ELF\1\1\1", 7) || ehdr.e_type != 2 || ehdr.e_machine != 3 ||

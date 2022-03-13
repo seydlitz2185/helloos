@@ -99,3 +99,5 @@ fi
 #fi
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 alias src="cd /pintos/proj-intro/src"
+alias makestackalign="makestackalign(){ cd /pintos/proj-intro/src/userprog/build; i386-elf-gcc -c ../../tests/userprog/stack-align.c -o tests/userprog/stack-align.o -ggdb3 -O0 -march=i686 -fno-pic -fno-inline -fno-stack-protector -nostdinc -I../.. -I../../lib -I../../lib/user -I. -fomit-frame-pointer -Wall -W -Wstrict-prototypes -Wmissing-prototypes -Wsystem-headers  -MMD -MF tests/userprog/stack-align.d;};makestackalign"
+alias killgdb="jobs -l | grep FORCE_SIMULATOR | grep -v killed | cut -c 8-11 | xargs kill -s 9"
