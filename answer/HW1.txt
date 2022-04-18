@@ -1,0 +1,35 @@
+CS162 HW1-list
+/*运行./pthread 一次运行结果*/
+Main stack: 7ffd44164238, common: 55729545e010 (162)
+I am on the heap.	/*父线程开始执行*/
+main: creating thread 0 	/*父线程依次生成四个子线程*/
+main: creating thread 1
+main: creating thread 2
+main: creating thread 3
+Thread #0 stack: 7fe093664ee0 common: 55729545e010 (162) tptr: 0Thread #2 stack: 7fe092662ee0 common: 55729545e010 (164) tptr: 2557297109260: am on the heap.
+Thread #1 stack: 7fe092e63ee0 common: 55729545e010 (163) tptr: 1557297109260:  am on the heap.
+Thread #3 stack: 7fe091e61ee0 common: 55729545e010 (165) tptr: 3557297109260: m on the heap.
+557297109260: I am on the heap.
+/*对比第9行和第12行的输出结果可以发现，在本次运行./pthread时,线程0在被创建后先执行threadfun，且在打印信息时中被中断，直接开始打印线程2的信息，所以第9行在缺少换行符，线程0在最后又被切换回来，在12行打印出未完成的信息*/
+
+/*pthread.c threadfun函数*/
+void* threadfun(void* threadid) {
+  long tid;
+  tid = (long)threadid;
+  printf("Thread #%lx stack: %lx common: %lx (%d) tptr: %lx\n", tid, (unsigned long)&tid,
+         (unsigned long)&common, common++, (unsigned long)threadid);
+  printf("%lx: %s\n", (unsigned long)somethingshared, somethingshared + tid);
+  pthread_exit(NULL);
+}
+Questions:
+3.1 ./pthread每次运行的结果有可能不同
+在pthread.c中，父线程依次产生四个子线程，四个子线程都执行threadfun，打印自己的线程号和栈信息等。 因为四个子线程是并发执行的，在没有使用特殊调度策略时，并不能保证每次运行线程执行的顺序固定
+
+3.2 多线程程序并不共用一个栈（在hit李治军的课程讲过，用户程序的多线程图像中，每个线程都有一个线程控制块，各自维护一个用户栈和内核栈）
+
+3.3 多线程对全局变量共享同一个地址，并没有拷贝全局变量
+
+3.4  threadfun的参数void* threadid是在主线程中循环创建线程时使用的进程号，它是一个long，将它强制类型转换为（void*）后传入threadfun，再次转换为（long）并作为子线程tid。所以threadid是从父线程中传递给子线程的。
+
+3.5 命令行参数较大时由于要产生的线程多，部分线程可能在主线程返回前没有被调度到，来不及运行
+
