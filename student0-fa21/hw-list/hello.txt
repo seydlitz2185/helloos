@@ -1,0 +1,70 @@
+word_count_p.c: In function ‘init_words’:
+word_count_p.c:34:13: warning: passing argument 1 of ‘list_init’ from incompatible pointer type [-Wincompatible-pointer-types]
+   list_init(wclist);
+             ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:131:6: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ void list_init(struct list*);
+      ^~~~~~~~~
+word_count_p.c: In function ‘len_words’:
+word_count_p.c:38:20: warning: passing argument 1 of ‘list_size’ from incompatible pointer type [-Wincompatible-pointer-types]
+   return list_size(wclist);
+                    ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:161:8: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ size_t list_size(struct list*);
+        ^~~~~~~~~
+word_count_p.c: In function ‘find_word’:
+word_count_p.c:43:25: warning: passing argument 1 of ‘list_begin’ from incompatible pointer type [-Wincompatible-pointer-types]
+   for(curr = list_begin(wclist); curr!=list_end(wclist); curr = list_next(curr)){
+                         ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:134:19: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ struct list_elem* list_begin(struct list*);
+                   ^~~~~~~~~~
+word_count_p.c:43:49: warning: passing argument 1 of ‘list_end’ from incompatible pointer type [-Wincompatible-pointer-types]
+   for(curr = list_begin(wclist); curr!=list_end(wclist); curr = list_next(curr)){
+                                                 ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:136:19: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ struct list_elem* list_end(struct list*);
+                   ^~~~~~~~
+word_count_p.c: In function ‘add_word’:
+word_count_p.c:60:20: warning: passing argument 1 of ‘list_push_back’ from incompatible pointer type [-Wincompatible-pointer-types]
+     list_push_back(wclist, insert);
+                    ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:149:6: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ void list_push_back(struct list*, struct list_elem*);
+      ^~~~~~~~~~~~~~
+word_count_p.c: In function ‘fprint_words’:
+word_count_p.c:70:39: warning: passing argument 1 of ‘list_begin’ from incompatible pointer type [-Wincompatible-pointer-types]
+   struct list_elem* curr = list_begin(wclist);
+                                       ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:134:19: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ struct list_elem* list_begin(struct list*);
+                   ^~~~~~~~~~
+word_count_p.c:72:28: warning: passing argument 1 of ‘list_end’ from incompatible pointer type [-Wincompatible-pointer-types]
+     while(curr != list_end(wclist)){
+                            ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:136:19: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ struct list_elem* list_end(struct list*);
+                   ^~~~~~~~
+word_count_p.c: In function ‘wordcount_sort’:
+word_count_p.c:96:13: warning: passing argument 1 of ‘list_sort’ from incompatible pointer type [-Wincompatible-pointer-types]
+   list_sort(wclist, less_list, less);
+             ^~~~~~
+In file included from word_count.h:41:0,
+                 from word_count_p.c:31:
+list.h:173:6: note: expected ‘struct list *’ but argument is of type ‘word_count_list_t * {aka struct word_count_list *}’
+ void list_sort(struct list*, list_less_func*, void* aux);
+      ^~~~~~~~~
