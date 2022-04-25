@@ -30,28 +30,67 @@
 
 #include "word_count.h"
 
-void init_words(word_count_list_t* wclist) { /* TODO */
+void init_words(word_count_list_t* wclist) { 
+  list_init(&(wclist->lst));
 }
 
 size_t len_words(word_count_list_t* wclist) {
-  /* TODO */
-  return 0;
+  return list_size(&(wclist->lst));
 }
 
 word_count_t* find_word(word_count_list_t* wclist, char* word) {
-  /* TODO */
+ struct list_elem * curr;
+  for(curr = list_begin(&(wclist->lst)); curr!=list_end(&(wclist->lst)); curr = list_next(curr)){
+    word_count_t * w = list_entry(curr, word_count_t,elem);
+    if(strcmp(w->word,word)==0){
+      return w;
+    }
+  }
   return NULL;
 }
 
 word_count_t* add_word(word_count_list_t* wclist, char* word) {
-  /* TODO */
-  return NULL;
+  word_count_t * fw = find_word(wclist, word); 
+  if( fw != NULL){
+    fw->count++;
+  } else if((fw = (word_count_t*) malloc(sizeof(word_count_t)))!= NULL){
+    fw->word = word;
+    fw->count = 1;
+    struct list_elem* insert = &fw->elem;
+    list_push_back(&(wclist->lst), insert);
+  }else {
+    perror("malloc");
+  }
+  return fw;
 }
 
-void fprint_words(word_count_list_t* wclist, FILE* outfile) { /* TODO */
+void fprint_words(word_count_list_t* wclist, FILE* outfile) { 
+  /* synchronized */
+  pthread_mutex_trylock(&(wclist->lock));
+  struct list_elem* curr = list_begin(&(wclist->lst));
+  if(outfile != NULL){
+    while(curr != list_end(&(wclist->lst))){
+      word_count_t* w = list_entry(curr,word_count_t,elem);
+      if(w != NULL){
+        fprintf(outfile,"%8d\t%s\n",w->count,w->word);
+      }
+      curr = list_next(curr); 
+    }
+  }
+  pthread_mutex_unlock(&(wclist->lock));
 }
 
-void wordcount_sort(word_count_list_t* wclist,
-                    bool less(const word_count_t*, const word_count_t*)) {
-  /* TODO */
+static bool less_list(const struct list_elem* ewc1, const struct list_elem* ewc2, void* aux) {
+  word_count_t* wc1 = list_entry(ewc1, word_count_t, elem);
+  word_count_t* wc2 = list_entry(ewc2, word_count_t, elem);
+  if(strcmp(wc1->word,wc2->word) >= 0){
+    return false;
+  } else{
+    return true;
+  }
+}
+
+void wordcount_sort(word_count_list_t* wclist, bool less(const word_count_t*, const word_count_t*)) {
+ 
+  list_sort(&(wclist->lst), less_list, less);
 }

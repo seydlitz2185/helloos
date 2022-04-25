@@ -32,6 +32,29 @@
 #include "word_count.h"
 #include "word_helpers.h"
 
+int semaphore = 0;
+
+void* threadfun(void* fname){
+  printf("Open file:%s\n",(char*)fname);
+  char* name ;
+  name = (char*) fname;
+  FILE* fp;
+  fp = fopen(name, "r");
+  if(fp != NULL){
+  	word_count_list_t word_counts;
+  	init_words(&word_counts);
+ 		count_words(&word_counts,fp);
+		wordcount_sort(&word_counts, less_count);
+    printf("\nsorted:%s\n",name);
+  	fprint_words(&word_counts, stdout);
+    printf("\nend:%s\n",name);
+    semaphore++;
+  }else{
+		printf("can't open file:%s\n",name);
+	} 
+ 		pthread_exit(NULL);
+}
+
 /*
  * main - handle command line, spawning one thread per file.
  */
@@ -39,16 +62,26 @@ int main(int argc, char* argv[]) {
   /* Create the empty data structure. */
   word_count_list_t word_counts;
   init_words(&word_counts);
-
+	int rc = 0;
   if (argc <= 1) {
     /* Process stdin in a single thread. */
     count_words(&word_counts, stdin);
   } else {
-    /* TODO */
+    pthread_t threads[argc-1];
+    for(int i = 0; i<argc-1 ; i++ ){
+      printf("main: creating thread %d\n", i);
+      rc = pthread_create(&threads[i], NULL, threadfun, (void*)argv[i+1]);
+      if (rc) {
+        printf("ERROR; return code from pthread_create() is %d\n", rc);
+        exit(-1);
+      }
+    }
   }
-
+  while (semaphore<(argc-1));
+  
   /* Output final result of all threads' work. */
-  wordcount_sort(&word_counts, less_count);
-  fprint_words(&word_counts, stdout);
+  /*wordcount_sort(&word_counts, less_count);
+  fprint_words(&word_counts, stdout);*/
+  printf("Finished\n");
   return 0;
 }
