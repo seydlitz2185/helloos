@@ -66,9 +66,42 @@ pid_t process_execute(const char* file_name) {
     palloc_free_page(fn_copy);
   return tid;
 }
+/*read args and push into stack*/
+int args_push(struct thread* t,  char* name){
+  const char* fname = name;
+  char** names = (char**) malloc(sizeof(char*));;
+  int len  = (int) strlen(fname);
+  int size = 0;
+  int curr_spaces=0;
+  int pre_word = 0;
+  for(int i=0; i<len ; i++ ){
+    if(curr_spaces>0){
+      /*find head of word */
+      if(fname[i]!= ' '){
+        names = (char**) realloc(names,sizeof(char*)*(size+1));
+        names[size] = malloc(sizeof(char)*(i+1-curr_spaces-pre_word));
+        strlcpy(names[size],fname+pre_word,i+1-curr_spaces-pre_word );
+          size++;
+        curr_spaces = 0;
+        pre_word = i;
+      }
+    }
+    /*count space*/
+    if(fname[i] == ' '){
+      curr_spaces++;
+    }
+  }
+  /*copy last argument*/
+    names[size] = malloc(sizeof(char)*(len+1-pre_word));
+    strlcpy(names[size],fname+pre_word,len+1-pre_word);
 
-/* A thread function that loads a user process and starts it
+    for(int i = size ; i>=0; i--){
+        printf("%s\n",names[i]);
+    }
+  return size++;/* A thread function that loads a user process and starts it
    running. */
+
+}
 static void start_process(void* file_name_) {
   char* file_name = (char*)file_name_;
   struct thread* t = thread_current();
@@ -90,7 +123,8 @@ static void start_process(void* file_name_) {
     t->pcb->main_thread = t;
     strlcpy(t->pcb->process_name, t->name, sizeof t->name);
   }
-
+  /*push commandline arguments*/
+  args_push(t,file_name);
   /* Initialize interrupt frame and load executable. */
   if (success) {
     memset(&if_, 0, sizeof if_);

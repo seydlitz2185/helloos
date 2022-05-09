@@ -165,7 +165,7 @@ next_sector:
 	mov %es:0x18, %dx
 	mov %dx, start
 	movw $0x2000, start + 2
-	ljmp *start
+	ljmp *start		
 
 read_failed:
 start:
