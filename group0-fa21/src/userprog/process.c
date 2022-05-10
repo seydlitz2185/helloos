@@ -67,43 +67,49 @@ pid_t process_execute(const char* file_name) {
   return tid;
 }
 /*read args and push into stack*/
-int args_push(struct thread* t,  char* name){
-  const char* fname = name;
-  char** names = (char**) malloc(sizeof(char*));;
-  int len  = (int) strlen(fname);
-  int size = 0;
-  int curr_spaces=0;
-  int pre_word = 0;
-  for(int i=0; i<len ; i++ ){
-    if(curr_spaces>0){
-      /*find head of word */
-      if(fname[i]!= ' '){
-        names = (char**) realloc(names,sizeof(char*)*(size+1));
-        names[size] = malloc(sizeof(char)*(i+1-curr_spaces-pre_word));
-        strlcpy(names[size],fname+pre_word,i+1-curr_spaces-pre_word );
-          size++;
-        curr_spaces = 0;
-        pre_word = i;
-      }
-    }
-    /*count space*/
-    if(fname[i] == ' '){
-      curr_spaces++;
-    }
+char* args_push(char* name, void** pesp){
+  char* fname = name;
+  char* esp = (char*) *pesp;
+  uint32_t argc = 0;
+  char** argv ;
+  char* token;
+  /*count argc*/
+  while((token = strtok_r(fname, (const char*)" ",&fname))) {
+    argc++;
   }
-  /*copy last argument*/
-    names[size] = malloc(sizeof(char)*(len+1-pre_word));
-    strlcpy(names[size],fname+pre_word,len+1-pre_word);
-
-    for(int i = size ; i>=0; i--){
-        printf("%s\n",names[i]);
-    }
-  return size++;/* A thread function that loads a user process and starts it
-   running. */
-
+  token = NULL;
+  fname = name;
+  argv = (char**)malloc(sizeof(char*)*(argc+1));
+  int i= 0;
+  int arg_val_len=0;
+  /*push args_val*/
+  while((token = strtok_r(fname, (const char*)" ",&fname))) {
+    int str_size = strlen(token)+1;
+    esp-=str_size;
+    strlcpy(esp,token,str_size);
+    argv[i++] = esp;
+    arg_val_len += str_size;
+  }
+  /*stack align*/
+  uint32_t stack_align = ((sizeof(char*)*(argc+1)/*argvs*/+sizeof(char**)/*argv*/+sizeof(int)/*argc*/+arg_val_len)%16);
+  esp-=(16-stack_align);
+  
+  for(int i = argc; i>=0; i-- ){
+    esp-=4;
+    strlcpy(esp,&argv[i],sizeof(char*)+1);
+  }
+  esp-=4;
+  strlcpy(esp,(char*)&argv,sizeof(char**)+1);
+  esp-=4;
+  strlcpy(esp,(char*)&argc,sizeof(int)+1);
+  return esp;
 }
+/* A thread function that loads a user process and starts it
+   running. */
 static void start_process(void* file_name_) {
   char* file_name = (char*)file_name_;
+  char* fname = (char*)malloc(sizeof(char)*(strlen(file_name)+1));
+  strlcpy(fname,file_name,strlen(file_name)+1);
   struct thread* t = thread_current();
   struct intr_frame if_;
   bool success, pcb_success;
@@ -116,6 +122,7 @@ static void start_process(void* file_name_) {
   if (success) {
     // Ensure that timer_interrupt() -> schedule() -> process_activate()
     // does not try to activate our uninitialized pagedir
+    //new_pcb->pagedir = pagedir_create();
     new_pcb->pagedir = NULL;
     t->pcb = new_pcb;
 
@@ -124,16 +131,20 @@ static void start_process(void* file_name_) {
     strlcpy(t->pcb->process_name, t->name, sizeof t->name);
   }
   /*push commandline arguments*/
-  args_push(t,file_name);
+    
   /* Initialize interrupt frame and load executable. */
   if (success) {
     memset(&if_, 0, sizeof if_);
     if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
     if_.cs = SEL_UCSEG;
     if_.eflags = FLAG_IF | FLAG_MBS;
+    file_name = strtok_r(file_name, (const char*)" ",&file_name);
     success = load(file_name, &if_.eip, &if_.esp);
   }
-
+  
+  
+  if_.esp = (uint32_t)args_push(fname,(void**)&if_.esp);
+  if_.esp-=4;
   /* Handle failure with succesful PCB malloc. Must free the PCB */
   if (!success && pcb_success) {
     // Avoid race where PCB is freed before t->pcb is set to NULL
@@ -150,7 +161,6 @@ static void start_process(void* file_name_) {
     sema_up(&temporary);
     thread_exit();
   }
-
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -210,7 +220,7 @@ void process_exit(void) {
   cur->pcb = NULL;
   free(pcb_to_free);
 
-  sema_up(&temporary);
+  sema_up(&temporary); 
   thread_exit();
 }
 
