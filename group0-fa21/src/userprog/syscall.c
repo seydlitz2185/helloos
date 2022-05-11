@@ -27,8 +27,13 @@ static void syscall_handler(struct intr_frame* f UNUSED) {
     process_exit();
   }else if(args[0]== SYS_WRITE){
     /*The write syscall for the STDOUT file descriptor only.*/
-    
-  
+    int fd = args[1];
+    const char* buffer =(const char*) args[2];
+    uint32_t len = args[3];
+    if(fd ==1 ){
+      putbuf(buffer,len);
+    }
+    f->eax = len;
   }else if(args[0]== SYS_PRACTICE){
     f->eax = args[1]+1;
     printf("%s: practice(%d)\n", thread_current()->pcb->process_name, args[1]);

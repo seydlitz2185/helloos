@@ -68,35 +68,39 @@ pid_t process_execute(const char* file_name) {
 }
 /*read args and push into stack*/
 char* args_push(char* name, void** pesp){
-  char* fname = name;
+  char* fname =(char*) malloc(sizeof(char)*(strlen(name)+1));
+  strlcpy(fname,name,strlen(name)+1);
   char* esp = (char*) *pesp;
   uint32_t argc = 0;
-  char** argv ;
+  char** argv=(char**)malloc(sizeof(char*));
   char* token;
   char* argvaddr =(char*) malloc(sizeof(char));
-  /*count argc*/
+  /*count argc
   while((token = strtok_r(fname, (const char*)" ",&fname))) {
     argc++;
   }
   token = NULL;
-  fname = name;
-  argv = (char**)malloc(sizeof(char*)*(argc));
+  strlcpy(fname,name,strlen(name)+1);
+  int arg_val_len=0;*/
+  
   int i= 0;
   int arg_val_len=0;
   /*push args_val*/
   while((token = strtok_r(fname, (const char*)" ",&fname))) {
+    argc++;
     int str_size = strlen(token)+1;
     esp-=str_size;
     strlcpy(esp,token,str_size);
     memcpy(argvaddr, (const char*)(&esp), (uint32_t)sizeof(char*));
     //argv[i++] = (char*)*argvaddr;
     //argv[i++] = (char*)malloc(sizeof(char*));
-    memcpy(argv[i], (char*)argvaddr, (uint32_t)sizeof(char*));
+    memcpy(argv[i++], (char*)argvaddr, (uint32_t)sizeof(char*));
+    argv = (char**)realloc(argv,sizeof(char*)*argc+1);
     arg_val_len += str_size;
   }
   /*stack align*/
   uint32_t stack_align = ((sizeof(char*)*(argc+1)/*argvs*/+sizeof(char**)/*argv*/+sizeof(int)/*argc*/+arg_val_len)%16);
-  esp-=(16-stack_align);
+  esp-=(16-stack_align)%16;
   /*argv[argc]=NULL*/
   esp-=4;
   for(int i = argc-1; i>=0; i-- ){
@@ -110,8 +114,8 @@ char* args_push(char* name, void** pesp){
   esp-=4;
   memcpy(esp,(char*)&argc,(uint32_t)sizeof(char*));
 
-  free(argvaddr);
-  free(argv);
+  //free(argvaddr);
+
   return esp;
 }
 /* A thread function that loads a user process and starts it
@@ -127,7 +131,7 @@ static void start_process(void* file_name_) {
   /* Allocate process control block */
   struct process* new_pcb = malloc(sizeof(struct process));
   success = pcb_success = new_pcb != NULL;
-
+  file_name = strtok_r(file_name, (const char*)" ",&file_name);
   /* Initialize process control block */
   if (success) {
     // Ensure that timer_interrupt() -> schedule() -> process_activate()
@@ -138,7 +142,7 @@ static void start_process(void* file_name_) {
 
     // Continue initializing the PCB as normal
     t->pcb->main_thread = t;
-    strlcpy(t->pcb->process_name, t->name, sizeof t->name);
+    strlcpy(t->pcb->process_name,file_name, strlen(file_name)+1);
   }
   /*push commandline arguments*/
     
@@ -148,7 +152,6 @@ static void start_process(void* file_name_) {
     if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
     if_.cs = SEL_UCSEG;
     if_.eflags = FLAG_IF | FLAG_MBS;
-    file_name = strtok_r(file_name, (const char*)" ",&file_name);
     success = load(file_name, &if_.eip, &if_.esp);
   }
   
