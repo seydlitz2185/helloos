@@ -73,13 +73,14 @@ char* args_push(char* name, void** pesp){
   uint32_t argc = 0;
   char** argv ;
   char* token;
+  char* argvaddr =(char*) malloc(sizeof(char));
   /*count argc*/
   while((token = strtok_r(fname, (const char*)" ",&fname))) {
     argc++;
   }
   token = NULL;
   fname = name;
-  argv = (char**)malloc(sizeof(char*)*(argc+1));
+  argv = (char**)malloc(sizeof(char*)*(argc));
   int i= 0;
   int arg_val_len=0;
   /*push args_val*/
@@ -87,21 +88,30 @@ char* args_push(char* name, void** pesp){
     int str_size = strlen(token)+1;
     esp-=str_size;
     strlcpy(esp,token,str_size);
-    argv[i++] = esp;
+    memcpy(argvaddr, (const char*)(&esp), (uint32_t)sizeof(char*));
+    //argv[i++] = (char*)*argvaddr;
+    //argv[i++] = (char*)malloc(sizeof(char*));
+    memcpy(argv[i], (char*)argvaddr, (uint32_t)sizeof(char*));
     arg_val_len += str_size;
   }
   /*stack align*/
   uint32_t stack_align = ((sizeof(char*)*(argc+1)/*argvs*/+sizeof(char**)/*argv*/+sizeof(int)/*argc*/+arg_val_len)%16);
   esp-=(16-stack_align);
-  
-  for(int i = argc; i>=0; i-- ){
+  /*argv[argc]=NULL*/
+  esp-=4;
+  for(int i = argc-1; i>=0; i-- ){
     esp-=4;
-    strlcpy(esp,&argv[i],sizeof(char*)+1);
+    memcpy(esp,(const char*)argv[i],(uint32_t)sizeof(char*));
   }
+  
+  memcpy(argvaddr, (const char*)(&esp), sizeof(char*));
   esp-=4;
-  strlcpy(esp,(char*)&argv,sizeof(char**)+1);
+  memcpy(esp,(char*)argvaddr,(uint32_t)sizeof(char*));
   esp-=4;
-  strlcpy(esp,(char*)&argc,sizeof(int)+1);
+  memcpy(esp,(char*)&argc,(uint32_t)sizeof(char*));
+
+  free(argvaddr);
+  free(argv);
   return esp;
 }
 /* A thread function that loads a user process and starts it
@@ -143,7 +153,7 @@ static void start_process(void* file_name_) {
   }
   
   
-  if_.esp = (uint32_t)args_push(fname,(void**)&if_.esp);
+  if_.esp = (void*)args_push(fname,(void**)&if_.esp);
   if_.esp-=4;
   /* Handle failure with succesful PCB malloc. Must free the PCB */
   if (!success && pcb_success) {
