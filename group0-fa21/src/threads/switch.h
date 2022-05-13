@@ -8,6 +8,7 @@ struct switch_threads_frame {
   uint32_t esi;        /*  4: Saved %esi. */
   uint32_t ebp;        /*  8: Saved %ebp. */
   uint32_t ebx;        /* 12: Saved %ebx. */
+  char fpu_state[112];  /* 112BSaved FPU state 108B,112B aligned */
   void (*eip)(void);   /* 16: Return address. */
   struct thread* cur;  /* 20: switch_threads()'s CUR argument. */
   struct thread* next; /* 24: switch_threads()'s NEXT argument. */
@@ -31,7 +32,7 @@ void switch_thunk(void);
 #endif
 
 /* Offsets used by switch.S. */
-#define SWITCH_CUR 20
-#define SWITCH_NEXT 24
+#define SWITCH_CUR 20+112
+#define SWITCH_NEXT 24+112
 
 #endif /* threads/switch.h */

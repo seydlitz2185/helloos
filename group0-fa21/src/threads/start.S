@@ -147,7 +147,8 @@ start:
 #       We don't (yet) support floating point.
 
 	movl %cr0, %eax
-	orl $CR0_PE | CR0_PG | CR0_WP | CR0_EM, %eax
+# CR0_EM is about FPU
+	orl $CR0_PE | CR0_PG | CR0_WP , %eax 
 	movl %eax, %cr0
 
 # We're now in protected mode in a 16-bit segment.  The CPU still has
@@ -174,6 +175,9 @@ start:
 	mov %ax, %ss
 	addl $LOADER_PHYS_BASE, %esp
 	movl $0, %ebp			# Null-terminate main()'s backtrace
+
+# initilaze FPU
+	fninit
 
 #### Call main().
 

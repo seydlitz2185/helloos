@@ -26,7 +26,8 @@ struct intr_frame {
   uint32_t ebx;       /* Saved EBX. */
   uint32_t edx;       /* Saved EDX. */
   uint32_t ecx;       /* Saved ECX. */
-  uint32_t eax;       /* Saved EAX. */
+  uint32_t eax;       /* Saved EAX. */ /*popal end here*/
+  char fpu_state[112];/*save fpu state*/
   uint16_t gs, : 16;  /* Saved GS segment register. */
   uint16_t fs, : 16;  /* Saved FS segment register. */
   uint16_t es, : 16;  /* Saved ES segment register. */
@@ -42,7 +43,7 @@ struct intr_frame {
 
   /* Pushed by intrNN_stub in intr-stubs.S.
        This frame pointer eases interpretation of backtraces. */
-  void* frame_pointer; /* Saved EBP (frame pointer). */
+  void* frame_pointer; /* Saved EBP (frame pointer). */ /*addl $12, %esp end here*/
 
   /* Pushed by the CPU.
        These are the interrupted task's saved registers. */

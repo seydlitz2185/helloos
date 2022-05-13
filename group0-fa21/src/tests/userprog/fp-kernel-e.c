@@ -5,7 +5,7 @@
 #include "tests/lib.h"
 #include "tests/main.h"
 
-const char* test_name = "fp-kernel-e";
+//const char* test_name = "fp-kernel-e";
 
 void test_main(void) {
   msg("Computing e...");

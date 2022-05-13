@@ -4,7 +4,7 @@
 #include <float.h>
 #include "tests/lib.h"
 
-const char* test_name = "compute-e";
+//const char* test_name = "compute-e";
 
 int main(void) {
   double e_res = sum_to_e(10);

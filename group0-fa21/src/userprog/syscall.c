@@ -35,4 +35,13 @@ static void syscall_handler(struct intr_frame* f UNUSED) {
     }
     f->eax = len;
   }
+
+  if(args[0] == SYS_COMPUTE_E){
+    int n = args[1];
+    double e = 0.0;
+    for (int i = 0; i <= n; i++) {
+     e += 1.0 / factorial(i);
+    }
+    f->eax = e;
+  }
 }

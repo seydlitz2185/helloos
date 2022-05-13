@@ -5,7 +5,7 @@
 #include "tests/main.h"
 
 #define FPU_SIZE 108
-const char* test_name = "fp-init";
+//const char* test_name = "fp-init";
 
 void test_main(void) {
   uint8_t fpu[FPU_SIZE];

@@ -7,7 +7,7 @@
 #include "tests/lib.h"
 #include "tests/main.h"
 
-const char* test_name = "fp-simul";
+//const char* test_name = "fp-simul";
 
 void test_main(void) {
   msg("Computing e...");
