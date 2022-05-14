@@ -23,7 +23,7 @@ intr_entry:
 	pushl %fs
 	pushl %gs
    subl $108, %esp
-   fsave (%esp)
+   fnsave (%esp)
    finit
 	pushal
 

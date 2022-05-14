@@ -24,7 +24,7 @@ switch_threads:
 	# This stack frame must match the one set up by thread_create()
 	# in size.
 	subl $108, %esp
-   	fsave (%esp)
+   	fnsave (%esp) # qemu cant execute fsave , so use fnsave
 	finit
 	pushl %ebx
 	pushl %ebp
