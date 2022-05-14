@@ -24,7 +24,7 @@ intr_entry:
 	pushl %gs
    subl $108, %esp
    fnsave (%esp)
-   finit
+   fninit
 	pushal
 
 	/* Set up kernel environment. */

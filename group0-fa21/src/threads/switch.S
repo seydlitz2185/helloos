@@ -25,7 +25,7 @@ switch_threads:
 	# in size.
 	subl $108, %esp
    	fnsave (%esp) # qemu cant execute fsave , so use fnsave
-	finit
+	fninit
 	pushl %ebx
 	pushl %ebp
 	pushl %esi
