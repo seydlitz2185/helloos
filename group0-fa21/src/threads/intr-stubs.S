@@ -22,7 +22,7 @@ intr_entry:
 	pushl %es
 	pushl %fs
 	pushl %gs
-   subl $112, %esp
+   subl $108, %esp
    fsave (%esp)
    finit
 	pushal
@@ -55,7 +55,7 @@ intr_exit:
 	/* Restore caller's registers. */
 	popal
    frstor (%esp)
-   addl $112, %esp
+   addl $108, %esp
 	popl %gs
 	popl %fs
 	popl %es

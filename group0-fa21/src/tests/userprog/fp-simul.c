@@ -10,6 +10,7 @@
 //const char* test_name = "fp-simul";
 
 void test_main(void) {
+  test_name = "fp-simul";
   msg("Computing e...");
   pid_t e_pid = exec("compute-e");
   double e_res = sum_to_e(10);

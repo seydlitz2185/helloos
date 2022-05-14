@@ -8,6 +8,7 @@
 //const char* test_name = "fp-kernel-e";
 
 void test_main(void) {
+  test_name = "fp-kernel-e";
   msg("Computing e...");
   double e_res = compute_e(10);
   if (abs(e_res - E_VAL) < TOL) {

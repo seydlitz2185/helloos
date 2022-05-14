@@ -27,6 +27,7 @@ static int values[NUM_VALUES] = {1, 6, 2, 162, 126, 2, 6, 1};
   })
 
 void test_main(void) {
+  test_name = "fp-syscall";
   uint8_t fpu_before[FPU_SIZE];
   uint8_t fpu_after[FPU_SIZE];
 
